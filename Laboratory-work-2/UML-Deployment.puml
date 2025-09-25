@@ -1,0 +1,53 @@
+@startuml
+
+skinparam packageStyle rectangle
+skinparam defaultTextAlignment center
+
+node "Операторська станція" as operator_station {
+  node "ОС Windows" as operator_os {
+    component "Веб-браузер" as web_browser
+    component "SCADA-клієнт" as scada_client
+  }
+}
+
+node "Сервер 1" as server1 {
+  node "ОС Linux" as server1_os {
+    component "Веб-сервер (Nginx)" as web_server
+    component "Додаток керування" as control_app
+  }
+}
+
+node "Сервер 2" as server2 {
+  node "ОС Linux" as server2_os {
+    component "Сервер баз даних (PostgreSQL)" as database_server
+    database "БД подій та журналів" as events_db
+    database "БД конфігурації обладнання" as config_db
+  }
+}
+
+node "SCADA-сервер" as scada_server {
+  node "ОС Windows Server" as scada_os {
+    component "SCADA-система" as scada_system
+    database "База даних тегів" as tags_db
+  }
+}
+
+node "Обладнання електростанції" as equipment {
+  node "ПЛК (PLC)" as plc {
+    component "Модуль керування турбіною" as turbine_controller
+    component "Модуль контролю генератора" as generator_controller
+  }
+}
+
+web_browser -- web_server : HTTPS/443
+scada_client -- scada_system : OPC UA/4840
+control_app -- database_server : TCP/5432
+web_server -- control_app : HTTP/8080
+scada_system -- plc : Modbus TCP/502
+scada_system -- database_server : TCP/5432
+
+database_server -- events_db
+database_server -- config_db
+scada_system -- tags_db
+
+@enduml
